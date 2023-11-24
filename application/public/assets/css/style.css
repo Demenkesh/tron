@@ -1,0 +1,15 @@
+#back-to-top {
+    right: 10px;
+    bottom: 20px;
+    display: none;
+}
+.products-section{
+    min-height: 80vh;
+}
+.p-name{
+    bottom: 1px;
+}
+.summary li{
+    display: flex;
+    justify-content: space-between;
+}
