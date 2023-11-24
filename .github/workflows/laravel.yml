@@ -27,6 +27,7 @@ jobs:
       - name: Route Clearing
         run: php artisan route:clear
 
+        
       - name: Route Clearing
         run: php artisan optimize:clear
 
