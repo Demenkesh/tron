@@ -9,35 +9,39 @@ jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 720
+    timeout-minutes: 30
 
     steps:
-      - name: Use Composer v2
-        run: composer self-update --2
-
-      - name: Update Composer
-        run: composer self-update
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2.3.2
 
       - name: Install Dependencies
-        run: composer install -vvv --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        working-directory: application  # Set the working directory to 'application'
 
-      - name: Copy .env if not exists
+      - name: Copy Environment File
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        working-directory: application  # Set the working directory to 'application'
 
       - name: Generate App Key
         run: php artisan key:generate
+        working-directory: application  # Set the working directory to 'application'
 
       - name: Config Clearing
         run: php artisan config:clear
+        working-directory: application  # Set the working directory to 'application'
 
       - name: Cache Clearing
         run: php artisan cache:clear
+        working-directory: application  # Set the working directory to 'application'
 
       - name: Route Clearing
         run: php artisan route:clear
+        working-directory: application  # Set the working directory to 'application'
 
       - name: Optimize Clearing
         run: php artisan optimize:clear
+        working-directory: application  # Set the working directory to 'application'
 
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
