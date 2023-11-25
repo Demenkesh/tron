@@ -9,22 +9,44 @@
                         {!! $message !!}
                     </div>
                     <div class="card card-body d-flex flex-column align-items-center">
-                        <p id="address" class="fw-bold w-100 text-center">{{$transaction->address}}</p>
+                        <p id="address" class="fw-bold w-100 text-center">{{ $transaction->address }}</p>
                         <div id="qr-code"></div>
-                        <input type="hidden" value="{{$transaction->id}}" id="payment-id">
-                        <input type="hidden" value="{{url('/success')}}" id="success-url">
-                        <input type="hidden" value="{{url('/check-transaction?txid='.$transaction->id)}}" id="check-url">
-                        <input type="hidden" value="{{asset('/public/images/'.$transaction->token->icon)}}" id="icon">
-                        <span id="danger-man" class="text-danger d-none">{{__('Transaction not yet confirmed on the blockchain')}}</span><br>
+                        <input type="hidden" value="{{ $transaction->id }}" id="payment-id">
+                        <input type="hidden" value="{{ url('/success') }}" id="success-url">
+                        <input type="hidden" value="{{ url('/check-transaction?txid=' . $transaction->id) }}"
+                            id="check-url">
+                        <input type="hidden" value="{{ asset('/public/images/' . $transaction->token->icon) }}"
+                            id="icon">
+                        <span id="danger-man"
+                            class="text-danger d-none">{{ __('Waiting for payment') }}</span>
+                        <br>
                         <div id="loading" class="spinner-border text-success d-none" role="status">
                         </div>
-                        <button id="confirm" class="btn btn-success w-75">{{__('I have paid')}}</button>
+                        <button id="confirm" class="btn btn-success w-75">{{ __('I have paid') }}</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var button = document.getElementById('confirm');
+
+            function clickButtonAndRefresh() {
+                button.click();
+                $('#danger-man').addClass('d-none');
+            }
+
+            // Trigger click and refresh every 11 seconds
+            setInterval(clickButtonAndRefresh, 11000); // 11 seconds in milliseconds
+        });
+    </script>
+
+
+
 @endsection
 @section('page_scripts')
-    <script src="{{asset('public/assets/js/pay.js')}}"></script>
+    <script src="{{ asset('public/assets/js/pay.js') }}"></script>
 @endsection

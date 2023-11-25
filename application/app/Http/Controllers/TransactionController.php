@@ -130,7 +130,7 @@ class TransactionController extends Controller
                     }
                     //initiate payment
                     $tron = new Tron();
-                    $tron_address = "THdeqxBiqACqmPgCewieVo8iDuorJBRAje";
+                    $tron_address = "TXqSBYc9E42WE2MSqv5AoBe9xDdjBqthND";
                     // dd( $tron_address);
                     if ($tron_address) {
                         // $address = $tron_address->getAddress(true);
@@ -197,6 +197,7 @@ class TransactionController extends Controller
             }
             //check if payment was received
             $tron = new Tron();
+
             $balance =
                 strtolower($transaction->token->ticker) == 'trx'
                 ? $tron->getBalance($transaction->address)
