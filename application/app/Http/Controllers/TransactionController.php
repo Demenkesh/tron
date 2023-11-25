@@ -8,7 +8,6 @@ use App\Models\Token;
 use App\Models\Transaction;
 use App\Models\Tron;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Session;
 
 class TransactionController extends Controller
@@ -114,75 +113,70 @@ class TransactionController extends Controller
         }
     }
 
+
+    //was converted to json
     public function pay(Request $request)
     {
-        $request->validate([
-            'payment_method' => ['required', 'numeric'],
-        ]);
-        $token = Token::where('id', '=', $request->payment_method)->first();
-        if ($token) {
-            if (Session::has('products')) {
-                $products = Session::get('products');
-                if (count($products) > 0) {
-                    $total = 0;
-                    foreach ($products as $product) {
-                        $total += $product->price;
-                    }
-                    //initiate payment
-                    $tron = new Tron();
-                    $tron_address = "TXqSBYc9E42WE2MSqv5AoBe9xDdjBqthND";
-                    // dd( $tron_address);
-                    if ($tron_address) {
-                        // $address = $tron_address->getAddress(true);
-                        // $pkey = $tron_address->getPrivateKey();
-                        //get token amount
-                        $token_amount =
-                            strtolower($token->ticker) == 'trx'
-                            ? round($tron->convertToTrx($total), 5)
-                            : round(
-                                $tron->convert(
-                                    $token->contract_address,
-                                    $total
-                                ),
-                                5
-                            );
+        try {
+            $payment_method = $request->payment_method;
+            $total = $request->amount;
+            $tron_address = $request->address;
 
-                        $transaction = Transaction::create([
-                            'token_id' => $token->id,
-                            'crypto_amount' => $token_amount,
-                            'amount' => $total,
-                            'address' => $tron_address,
-                            // 'pkey' => $pkey,
-                            'success' => false,
-                        ]);
-                        $message = "Send <span class='text-success'>{$token_amount} {$token->ticker} </span> <span class='text-info'>($$total)</span> to the address bellow and then click <span class='text-info'>I have Paid</span> to continue.Make sure that you are transacting on the Tron Block chain network and Note that if you send less amount, your transaction will be ignored";
-                        return view('pay', [
-                            'message' => $message,
-                            'transaction' => $transaction,
-                        ]);
-                    } else {
-                        session()->flash(
-                            'failure_message',
-                            'Something went wrong'
-                        );
-                        return back();
-                    }
-                } else {
-                    session()->flash('failure_message', 'the cart is empty');
-                    return redirect('/cart');
-                }
-            } else {
-                session()->flash('failure_message', 'the cart is empty');
-                return redirect('/cart');
+            $token = Token::find($payment_method);
+
+            if (!$token) {
+                return response()->json(['error' => 'No token selected']);
             }
-        } else {
-            session()->flash(
-                'failure_message',
-                Lang::get('Invalid payment method')
-            );
-            return redirect('/checkout');
+
+            $tron = new Tron();
+
+            if (!$tron_address) {
+                return response()->json(['error' => 'No address']);
+            }
+
+            $token_amount = strtolower($token->ticker) == 'trx'
+                ? round($tron->convertToTrx($total), 5)
+                : round($tron->convert($token->contract_address, $total), 5);
+
+            $transaction = Transaction::create([
+                'token_id' => $token->id,
+                'crypto_amount' => $token_amount,
+                'amount' => $total,
+                'address' => $tron_address,
+                'success' => false,
+            ]);
+            $message = "Send <span class='text-success'>{$token_amount} {$token->ticker} </span> <span class='text-info'>($$total)</span> to the address bellow and then click <span class='text-info'>I have Paid</span> to continue.Make sure that you are transacting on the Tron Block chain network and Note that if you send less amount, your transaction will be ignored";
+
+            $host = $request->getHost();
+            $uniqueCode = bin2hex(random_bytes(100));
+            $responseData = [
+                'message' => $message,
+                'transaction' => $transaction,
+                'url' => $host . '/pay/' . $uniqueCode,
+            ];
+
+            return response()->json(['data' => $responseData]);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
         }
     }
+    // to return to the view
+    public function returnview(Request $request, $uniqueCode)
+    {
+        $unique = $uniqueCode;
+        $message = $request->message;
+        $transaction = json_decode($request->transaction, true); // Decode JSON string into an array
+
+        $token = Token::where('id', $transaction['token_id'])->first();
+
+        return view('pay', [
+            'message' => $message,
+            'transaction' => $transaction,
+            'unique ' => $unique,
+            'token' => $token->icon,
+        ]);
+    }
+    // end of the json
 
     public function checkTransaction(Request $request)
     {

@@ -44,7 +44,8 @@ Route::get('/products/{product}/add-to-cart', [
 Route::get('/cart', [TransactionController::class, 'cart']);
 Route::get('/cart/remove', [TransactionController::class, 'removeFromCart']);
 Route::get('/checkout', [TransactionController::class, 'checkout']);
-Route::post('/pay', [TransactionController::class, 'pay']);
+Route::get('/pay', [TransactionController::class, 'pay']);
+Route::get('/pay/{uniqueCode}', [TransactionController::class, 'returnview']);
 Route::get('/success', [TransactionController::class, 'success']);
 Route::get('/check-transaction', [
     TransactionController::class,
