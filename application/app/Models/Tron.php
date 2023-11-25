@@ -86,8 +86,15 @@ class Tron extends Model
         }
     }
 
+    // public function getTokenPriceInTrx($token_contract){
+    //     $fp = fopen("https://apilist.tronscan.org/api/token_trc20?contract={$token_contract}&showAll=1", 'r', false);
+    //     $data = json_decode(stream_get_contents($fp));
+    //     return $data->trc20_tokens[0]->market_info->priceInTrx;
+    // }\
+
+
     public function getTokenPriceInTrx($token_contract){
-        $fp = fopen("https://apilist.tronscan.org/api/token_trc20?contract={$token_contract}&showAll=1", 'r', false);
+        $fp = fopen("https://apilist.tronscan.org/api/token_trc20?contract=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&showAll=1", 'r', false);
         $data = json_decode(stream_get_contents($fp));
         return $data->trc20_tokens[0]->market_info->priceInTrx;
     }
