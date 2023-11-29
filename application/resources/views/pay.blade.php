@@ -15,7 +15,8 @@
                         <p id="address" class="fw-bold w-100 text-center">{{ $transaction['address'] }}</p>
                         <div id="qr-code"></div>
                         <input type="hidden" value="{{ $transaction['id'] }}" id="payment-id">
-                        <input type="hidden" value="{{ url('/success') }}" id="success-url">
+                        <input type="hidden" value="{{ route('success', ['uniqueCode' => $transaction['uniqueCode']]) }}"
+                            id="success-url">
                         <input type="hidden" value="{{ url('/check-transaction?txid=' . $transaction['id']) }}"
                             id="check-url">
                         <input type="hidden" value="{{ asset('/public/images/' . $transaction->token->icon) }}"

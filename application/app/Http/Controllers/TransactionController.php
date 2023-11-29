@@ -121,6 +121,7 @@ class TransactionController extends Controller
             $payment_method = $request->payment_method;
             $total = $request->amount;
             $tron_address = $request->address;
+            $sender_host = $request->sender_host;
 
             $token = Token::find($payment_method);
 
@@ -144,11 +145,13 @@ class TransactionController extends Controller
                 'amount' => $total,
                 'address' => $tron_address,
                 'success' => false,
+                'uniqueCode' => bin2hex(random_bytes(100)),
+                'host' => $sender_host,
             ]);
             $message = "Send <span class='text-success'>{$token_amount} {$token->ticker} </span> <span class='text-info'>($$total)</span> to the address bellow and then click <span class='text-info'>I have Paid</span> to continue.Make sure that you are transacting on the Tron Block chain network and Note that if you send less amount, your transaction will be ignored";
 
             $host = $request->getHost();
-            $uniqueCode = bin2hex(random_bytes(100));
+            $uniqueCode = $transaction['uniqueCode'];
             $responseData = [
                 'message' => $message,
                 'transaction' => $transaction,
@@ -245,8 +248,24 @@ class TransactionController extends Controller
         }
     }
 
-    public function success()
+    public function success($uniqueCode)
     {
-        return view('success');
+        $transaction = Transaction::where('uniqueCode', $uniqueCode)->first();
+
+        // Check if a transaction was found
+        if ($transaction) {
+            // Get all attributes from the model
+            $attributes = $transaction->toArray();
+
+            // Encode the attributes as a JSON string and then URL encode it
+            $encodedAttributes = urlencode(json_encode($attributes));
+            // Get the host URL from the transaction
+            $url = $transaction->host;
+
+            // Redirect to another website with the encoded attributes
+            return redirect()->away("$url?data=$encodedAttributes");
+        } else {
+            abort(404);
+        }
     }
 }
