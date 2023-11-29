@@ -15,7 +15,9 @@ class Transaction extends Model
         'amount',
         'address',
         'pkey',
-        'success'
+        'success',
+        'host',
+        'uniqueCode'
     ];
     public function token(){
         return $this->belongsTo(Token::class);
