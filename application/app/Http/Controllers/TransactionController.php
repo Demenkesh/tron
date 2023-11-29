@@ -166,18 +166,22 @@ class TransactionController extends Controller
     // to return to the view
     public function returnview(Request $request, $uniqueCode)
     {
-        $unique = $uniqueCode;
-        $message = $request->message;
-        $transaction = json_decode($request->transaction, true); // Decode JSON string into an array
+        try {
+            $unique = $uniqueCode;
+            $message = $request->message;
+            $transaction = json_decode($request->transaction, true); // Decode JSON string into an array
 
-        $token = Token::where('id', $transaction['token_id'])->first();
+            $token = Token::where('id', $transaction['token_id'])->first();
 
-        return view('pay', [
-            'message' => $message,
-            'transaction' => $transaction,
-            'unique ' => $unique,
-            'token' => $token->icon,
-        ]);
+            return view('pay', [
+                'message' => $message,
+                'transaction' => $transaction,
+                'unique ' => $unique,
+                'token' => $token->icon,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
+        }
     }
     // end of the json
 
@@ -250,22 +254,27 @@ class TransactionController extends Controller
 
     public function success($uniqueCode)
     {
-        $transaction = Transaction::where('uniqueCode', $uniqueCode)->first();
 
-        // Check if a transaction was found
-        if ($transaction) {
-            // Get all attributes from the model
-            $attributes = $transaction->toArray();
+        try {
+            $transaction = Transaction::where('uniqueCode', $uniqueCode)->first();
 
-            // Encode the attributes as a JSON string and then URL encode it
-            $encodedAttributes = urlencode(json_encode($attributes));
-            // Get the host URL from the transaction
-            $url = $transaction->host;
+            // Check if a transaction was found
+            if ($transaction) {
+                // Get all attributes from the model
+                $attributes = $transaction->toArray();
 
-            // Redirect to another website with the encoded attributes
-            return redirect()->away("$url?data=$encodedAttributes");
-        } else {
-            abort(404);
+                // Encode the attributes as a JSON string and then URL encode it
+                $encodedAttributes = urlencode(json_encode($attributes));
+                // Get the host URL from the transaction
+                $url = $transaction->host;
+
+                // Redirect to another website with the encoded attributes
+                return redirect()->away("$url?data=$encodedAttributes");
+            } else {
+                abort(404);
+            }
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
         }
     }
 }
